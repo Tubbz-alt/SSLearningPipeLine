@@ -69,14 +69,14 @@ class SSLearnPipeline(object):
   def validate_label_file(self, label_file):
     label_info = json.load(file(label_file,'r'))
     shapes = label_info['shapes']
-    assert len(shapes)<=self.max_boxes_in_one_image
+    assert len(shapes)<=self.max_boxes_in_one_image, "there are more than %d boxes labeled" % self.max_boxes_in_one_image
     unique_labels = set()
     for shape in shapes:
       try:
         shape_label = int(shape['label'])
       except:
-        raise Exception('all shape labels must be an integer, i.e, 1,2, etc, but this label is %s' % shape['label'])
-      assert shape_label >= 1 and shape_label <= self.max_boxes_in_one_image
+        raise Exception('all shape labels must be a 0-up integer, i.e, 0,1,2, etc, but this label is %s' % shape['label'])
+      assert shape_label >= 0 and shape_label < self.max_boxes_in_one_image
       unique_labels.add(shape_label)
       assert util.is_closed_five_point_box(shape['points'])
     assert len(unique_labels)==len(shapes), "all box labels must be unique"
