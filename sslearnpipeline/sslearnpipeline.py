@@ -7,6 +7,13 @@ import glob
 import json
 import matplotlib.pyplot as plt
 import tensorflow as tf
+import numpy as np
+import sklearn
+from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LinearRegression
+from sklearn.multioutput import MultiOutputRegressor
+from sklearn.externals import joblib
+
 from . import util
 from . import vgg16
 
@@ -90,6 +97,11 @@ class SSLearnPipeline(object):
       category += 1<<box_id
     label_info['category'] = str(category)
     label_info['imgkey'] = keystr
+    strfile = self.outputdir + '/codeword/'+keystr
+    
+    np.save(strfile,codeword)
+    #label_info['codeword'] = np.array_str(codeword)
+    #added this for codeword
     # TODO: should be embed the codeword in the json? Or start creating an hdf5 file somewhere
     # and reference where the codeword is?
 
@@ -136,7 +148,7 @@ class SSLearnPipeline(object):
 
     codeword = layers[0][0,:]
     assert codeword.shape == (4096,)
-
+    
     self.update_label_file(output_label_fname, keystr, codeword=codeword)
 
     # TODO: print category given for this image
@@ -145,31 +157,205 @@ class SSLearnPipeline(object):
 
   def build_models(self):
     pass
+    print( "holaaa")
+    json_string_prep = self.outputdir + '/labeled/*.json'
+    print(json_string_prep)
+    
+    json_files = glob.glob(json_string_prep)
+    #print(json_files)
+    
+    size = len(json_files)
+    features_class = np.zeros((size,5005))
+    i =0 
+    ci = 0
+    for k in json_files:
+      label_file = k
+      label_info = json.load(file(label_file,'r'))
+      #print(label_info['shapes'])
+      print(len(label_info['shapes']))
+      l1 = 0 ; l2 = 0; l3 = 0; l4 = 0; l5 = 0; l6 = 0; l7 =0; l8 = 0;
+      if len(label_info['shapes'])==2:
+           ci = 3
+           for k in range(0,1):
+             l = int(label_info['shapes'][k]['label'])
+             if(l == 0):
+               l1 = label_info['shapes'][k]['points'][0][0]
+               l2 = label_info['shapes'][k]['points'][0][1]
+               l3 = label_info['shapes'][k]['points'][2][0]
+               l4 = label_info['shapes'][k]['points'][2][1]
+             if(l == 1):
+               l5 = label_info['shapes'][k]['points'][0][0]
+               l6 = label_info['shapes'][k]['points'][0][1]
+               l7 = label_info['shapes'][k]['points'][2][0]
+               l8 = label_info['shapes'][k]['points'][2][1]
+      if len(label_info['shapes'])==0:
+           ci = 0
+      if len(label_info['shapes']) ==1:
+           l = int(label_info['shapes'][0]['label'])
+           ci = l +1
+           if(l == 0):
+             l1 = label_info['shapes'][0]['points'][0][0]
+             l2 = label_info['shapes'][0]['points'][0][1]
+             l3 = label_info['shapes'][0]['points'][2][0]
+             l4 = label_info['shapes'][0]['points'][2][1]
+           if(l == 1):
+             l5 = label_info['shapes'][0]['points'][0][0]
+             l6 = label_info['shapes'][0]['points'][0][1]
+             l7 = label_info['shapes'][0]['points'][2][0]
+             l8 = label_info['shapes'][0]['points'][2][1]
+           
+      strfile = self.outputdir + '/codeword/'+label_info['imgkey']+'.npy'
+      code = np.load(strfile)
+      features_class[i,0:4096] = code
+      features_class[i,4096] = ci
+      features_class[i,4097] = l1
+      features_class[i,4098] = l2
+      features_class[i,4099] = l3
+      features_class[i,4100] = l4
+      features_class[i,4101] = l5
+      features_class[i,4102] = l6
+      features_class[i,4103] = l7
+      features_class[i,4104] = l8
+      i = i +1
 
+    #Classifier Model
+    print('ClassifierModel')
+    trial = np.zeros((5))
+    for num in range(0,5):
+      reg = 10**(num/2)
+      reg = 1/reg
+      model = LogisticRegression(penalty='l2', dual=False, tol=0.0001, C=reg, fit_intercept=True, intercept_scaling=1, class_weight=None, random_state=None, solver='newton-cg', max_iter=100, multi_class='multinomial', verbose=0, warm_start=False, n_jobs=1)
+      model.fit(features_class[:,0:4096],features_class[:,4096])
+      #joblib.dump(model,'ClassifierModel.pkl')
+      #Measure Model Performance
+      total = 0
+      indices = np.arange(features_class.shape[0])
+      for k in range(0,features_class.shape[0]):
+        data = features_class[indices!=k,:]
+        model.fit(data[:,0:4096],data[:,4096])
+        w = model.predict(features_class[k,0:4096])
+        total = total + (w==features_class[k,4096])
+      accuracy = total/features_class.shape[0]
+      trial[num] = accuracy
+      print("accuracy is ")
+      print(accuracy)
+    r = np.argmax(trial)
+    reg = 10**(r/2)
+    reg = 1/reg
+    model = LogisticRegression(penalty='l2', dual=False, tol=0.0001, C=reg, fit_intercept=True, intercept_scaling=1, class_weight=None, random_state=None, solver='newton-cg', max_iter=100, multi_class='multinomial', verbose=0, warm_start=False, n_jobs=1)
+    model.fit(features_class[:,0:4096],features_class[:,4096])
+    joblib.dump(model,'ClassifierModel.pkl')
+
+    #Class One Regression 
+    print('Class One Regressor Model')
+    data = np.where(features_class[:,4096]==1)
+    data = features_class[data[0],:]
+    print(data.shape)
+    model = MultiOutputRegressor(LinearRegression())
+    model = model.fit(data[:,0:4096],data[:,4097:4101])
+    joblib.dump(model,'ClassOneRegression.pkl')
+    total = 0
+    indices = np.arange(features_class.shape[0])
+    for k in range(0,features_class.shape[0]):
+      data = features_class[indices!=k,:]
+      model.fit(data[:,0:4096],data[:,4096])
+      w = model.predict(features_class[k,0:4096])
+      total = total + np.sum((w-features_class[k,4097:4101])**2)
+    accuracy1 = total/features_class.shape[0]
+    #Class Two Regression 
+    data = np.where(features_class[:,4096]==2)
+    data = features_class[data[0],:]
+    model = MultiOutputRegressor(LinearRegression())
+    model = model.fit(data[:,0:4096],data[:,4101:4105])
+    joblib.dump(model,'ClassTwoRegression.pkl')
+    total = 0
+    indices = np.arange(features_class.shape[0])
+    for k in range(0,features_class.shape[0]):
+      data = features_class[indices!=k,:]
+      model.fit(data[:,0:4096],data[:,4096])
+      w = model.predict(features_class[k,0:4096])
+      total = total + np.sum((w-features_class[k,4101:4105])**2)
+    accuracy2 = total/features_class.shape[0]
+    #Class Three Regression
+    data = np.where(features_class[:,4096]==3)
+    data = features_class[data[0],:]
+    model = MultiOutputRegressor(LinearRegression())
+    model = model.fit(data[:,0:4096],data[:,4097:4105])
+    joblib.dump(model,'ClassThreeRegression.pkl')
+    total = 0
+    indices = np.arange(features_class.shape[0])
+    for k in range(0,features_class.shape[0]):
+      data = features_class[indices!=k,:]
+      model.fit(data[:,0:4096],data[:,4096])
+      w = model.predict(features_class[k,0:4096])
+      total = total + np.sum((w-features_class[k,4101:4105])**2)
+    accuracy3 = total/features_class.shape[0]
+
+
+     
+      
   def predict(self, img):
     img_batch_for_vgg16, jnk = util.prep_img_for_vgg16(img, mean_to_subtract=None)
-
+    #model = clf = joblib.load('ClassifierModel.pkl') 
     layers = self.vgg16.get_model_layers(self.session, 
                                          imgs=img_batch_for_vgg16, 
                                          layer_names=['fc2'])
-
+    #Class Labeler
+    model = joblib.load('ClassifierModel.pkl') 
     codeword = layers[0][0,:]
-
+    category = model.predict(codeword)
+    if(category==1):
+      model = joblib.load('ClassOneRegression.pkl') 
+      a = model.predict(codeword)
+      pass
+    if(category==2):
+      model = joblib.load('ClassTwoRegression.pkl')
+      a = model.predict(codeword)
+      #print(a)
+      pass
+    if(category==3):
+      model = joblib.load('ClassThreeRegression.pkl')
+      a = model.predict(codeword)
+      #print(a)
+      pass
     prediction = {}
     prediction['failed'] = False
-    prediction['category']=3
-    prediction['category_confidence'] = 0.99
-    prediction['boxes'] = {0:None, 1:None} # user may look for None for any box
-    prediction['boxes'][0] = {'confidence':0.99,
-                              'xmin':1,
-                              'xmax':10,
-                              'ymin':2,
-                              'ymax':10}
-    prediction['boxes'][1] = {'confidence':0.99,
-                              'xmin':101,
-                              'xmax':110,
-                              'ymin':102,
-                              'ymax':110}
+    prediction['category']=category
+    if(category==1):
+      prediction['boxes'][0]['x1'] = a[0]
+      prediction['boxes'][0]['y1'] = a[1]
+      prediction['boxes'][0]['x2'] = a[2]
+      prediction['boxes'][0]['y2'] = a[3]
+      
+      pass
+    if(category==2):
+      prediction['boxes'][1]['x1'] = a[0]
+      prediction['boxes'][1]['y1'] = a[1]
+      prediction['boxes'][1]['x2'] = a[2]
+      prediction['boxes'][1]['y2'] = a[3]
+      #print(a)
+      pass
+    if(category==3):
+      prediction['boxes'][0]['x1'] = a[0]
+      prediction['boxes'][0]['y1'] = a[1]
+      prediction['boxes'][0]['x2'] = a[2]
+      prediction['boxes'][0]['y2'] = a[3]
+      prediction['boxes'][1]['x1'] = a[4]
+      prediction['boxes'][1]['y1'] = a[5]
+      prediction['boxes'][1]['x2'] = a[6]
+      prediction['boxes'][1]['y2'] = a[7]
+    #prediction['category_confidence'] = 0.99
+    #prediction['boxes'] = {0:None, 1:None} # user may look for None for any box
+    #prediction['boxes'][0] = {'confidence':0.99,
+    #                          'x1':1,
+    #                          'x2':10,
+    #                          'y1':2,
+    #                          'y2':10}
+    #prediction['boxes'][1] = {'confidence':0.99,
+    #                          'x1':101,
+    #                          'x2':110,
+    #                          'y1':102,
+    #                          'y2':110}
     return prediction
 
   
