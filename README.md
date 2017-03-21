@@ -20,7 +20,7 @@ source conda_setup
 on pslogin (outside internet machine, get both these repos):
 
 ```
-git clone https://github.com/davidslac/SSLearningPipeLine.git
+git clone https://github.com/mmongia/SSLearningPipeLine.git
 git clone https://github.com/davidslac/pylabelme.git
 ```
 
