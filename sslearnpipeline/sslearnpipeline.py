@@ -157,9 +157,9 @@ class SSLearnPipeline(object):
 
   def build_models(self):
     pass
-    print( "holaaa")
+    #print( "holaaa")
     json_string_prep = self.outputdir + '/labeled/*.json'
-    print(json_string_prep)
+    #print(json_string_prep)
     
     json_files = glob.glob(json_string_prep)
     #print(json_files)
@@ -172,7 +172,7 @@ class SSLearnPipeline(object):
       label_file = k
       label_info = json.load(file(label_file,'r'))
       #print(label_info['shapes'])
-      print(len(label_info['shapes']))
+      #print(len(label_info['shapes']))
       l1 = 0 ; l2 = 0; l3 = 0; l4 = 0; l5 = 0; l6 = 0; l7 =0; l8 = 0;
       if len(label_info['shapes'])==2:
            ci = 3
@@ -225,6 +225,11 @@ class SSLearnPipeline(object):
       reg = 10**(num/2)
       reg = 1/reg
       model = LogisticRegression(penalty='l2', dual=False, tol=0.0001, C=reg, fit_intercept=True, intercept_scaling=1, class_weight=None, random_state=None, solver='newton-cg', max_iter=100, multi_class='multinomial', verbose=0, warm_start=False, n_jobs=1)
+      unique,counts = np.unique(features_class[:,4096], return_counts = True)
+      mincounts = np.min(counts)
+      print(counts)
+      #assert mincounts>1, "Only 1 example of a certain label. Need atleast 2 examples"
+        
       model.fit(features_class[:,0:4096],features_class[:,4096])
       #joblib.dump(model,'ClassifierModel.pkl')
       #Measure Model Performance
@@ -254,14 +259,14 @@ class SSLearnPipeline(object):
     model = MultiOutputRegressor(LinearRegression())
     model = model.fit(data[:,0:4096],data[:,4097:4101])
     joblib.dump(model,'ClassOneRegression.pkl')
-    total = 0
-    indices = np.arange(features_class.shape[0])
-    for k in range(0,features_class.shape[0]):
-      data = features_class[indices!=k,:]
-      model.fit(data[:,0:4096],data[:,4096])
-      w = model.predict(features_class[k,0:4096])
-      total = total + np.sum((w-features_class[k,4097:4101])**2)
-    accuracy1 = total/features_class.shape[0]
+    #total = 0
+    #indices = np.arange(features_class.shape[0])
+    #for k in range(0,features_class.shape[0]):
+    #  data = features_class[indices!=k,:]
+    #  model.fit(data[:,0:4096],data[:,4097:4101])
+    #  w = model.predict(features_class[k,0:4096])
+    #  total = total + np.sum((w-features_class[k,4097:4101])**2)
+    #accuracy1 = total/features_class.shape[0]
     #Class Two Regression 
     data = np.where(features_class[:,4096]==2)
     data = features_class[data[0],:]
@@ -270,26 +275,26 @@ class SSLearnPipeline(object):
     joblib.dump(model,'ClassTwoRegression.pkl')
     total = 0
     indices = np.arange(features_class.shape[0])
-    for k in range(0,features_class.shape[0]):
-      data = features_class[indices!=k,:]
-      model.fit(data[:,0:4096],data[:,4096])
-      w = model.predict(features_class[k,0:4096])
-      total = total + np.sum((w-features_class[k,4101:4105])**2)
-    accuracy2 = total/features_class.shape[0]
+    #for k in range(0,features_class.shape[0]):
+    #  data = features_class[indices!=k,:]
+    #  model.fit(data[:,0:4096],data[:,4101:4105])
+    #  w = model.predict(features_class[k,0:4096])
+    #  total = total + np.sum((w-features_class[k,4101:4105])**2)
+    #accuracy2 = total/features_class.shape[0]
     #Class Three Regression
     data = np.where(features_class[:,4096]==3)
     data = features_class[data[0],:]
     model = MultiOutputRegressor(LinearRegression())
     model = model.fit(data[:,0:4096],data[:,4097:4105])
     joblib.dump(model,'ClassThreeRegression.pkl')
-    total = 0
-    indices = np.arange(features_class.shape[0])
-    for k in range(0,features_class.shape[0]):
-      data = features_class[indices!=k,:]
-      model.fit(data[:,0:4096],data[:,4096])
-      w = model.predict(features_class[k,0:4096])
-      total = total + np.sum((w-features_class[k,4101:4105])**2)
-    accuracy3 = total/features_class.shape[0]
+    #total = 0
+    #indices = np.arange(features_class.shape[0])
+    #for k in range(0,features_class.shape[0]):
+    #  data = features_class[indices!=k,:]
+    #  model.fit(data[:,0:4096],data[:,4097:4105])
+    #  w = model.predict(features_class[k,0:4096])
+    #  total = total + np.sum((w-features_class[k,4097:4105])**2)
+    #accuracy3 = total/features_class.shape[0]
 
 
      

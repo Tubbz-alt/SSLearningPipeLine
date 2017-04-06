@@ -16,7 +16,7 @@ def get_dark(expname, run_number, output_filename, num_to_average=300):
         detector = psana.Detector('xtcav')
         run = ds.runs().next()
         event_times = list(run.times())
-        random.seed(458921)
+        random.seed(1046)
         random.shuffle(event_times)
         avg = None
         num_in_average = 0
@@ -96,7 +96,7 @@ def main():
                               output_prefix='amo86815',
                               vgg16_weights='/reg/d/ana01/temp/davidsch/mlearn/vgg16/vgg16_weights.npz',
                               max_boxes_in_one_image=2,
-                              total_to_label=7)
+                              total_to_label=10)
     dark_filename = '/reg/d/psdm/amo/amo86815/scratch/davidsch/dark_run68.npy'
     dark = get_dark(expname='amo86815', run_number=68, output_filename=dark_filename)
     
