@@ -74,6 +74,25 @@ The graph should look similar to  below.
 
 
 # How to label images
+Make sure in the main function in user_driver_m.py that the code reads like the following
+
+
+```
+    for idx in A:
+        #break
+        #locdata = get_old_info(xml)
+
+```
+
+Now run the code using the following 
+
+```
+PYTHONPATH=../pylabelme:$PYTHONPATH python user_driver_m
+```
+You will see that many images come up one after another. These images are already labeled. Eventually there will come an image that has not been labeled and you will have a choice to label it or not. You can click enter on the command promp to label. You can type "n" and then click enter to move on. Make sure to label images that only have fingers on the top island. For the sake of this tutorial we have set up the code to worry about the top finger. 
+
+
+If you do decide to label. 
 
 
 
