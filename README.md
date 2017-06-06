@@ -89,16 +89,22 @@ Now run the code using the following
 ```
 PYTHONPATH=../pylabelme:$PYTHONPATH python user_driver_m
 ```
-You will see that many images come up one after another. These images are already labeled. Eventually there will come an image that has not been labeled and you will have a choice to label it or not. You can click enter on the command promp to label. You can type "n" and then click enter to move on. Make sure to label images that only have fingers on the top island. For the sake of this tutorial we have set up the code to worry about the top finger. 
+You will see that many images come up one after another. These images are already labeled. Eventually there will come an image that has not been labeled and you will have a choice to label it or not.
 
 ![alt text](https://github.com/mmongia/SSLearningPipeLine/blob/master/Comment1.JPG)
+
+You can click enter on the command prompt to label. You can type "n" and then click enter to move on. Make sure to label images that only have fingers on the top island. For the sake of this tutorial we have set up the code to worry about the top finger. Once you find an image that has a top finger and you click enter you will see something like the following 
+
+
 ![alt text](https://github.com/mmongia/SSLearningPipeLine/blob/master/Comment2.JPG)
+
+In order to label click on the drawing button and draw a line. This line will be the diagonal of rectangular box. Then there will be prompt to give a label to the rectangular box. For the sake of this tutorial always label it "0" as shown in the below image.
+
+
 ![alt text](https://github.com/mmongia/SSLearningPipeLine/blob/master/comment3.JPG)
 
 
-
-If you do decide to label. 
-
+You can keep doing this. If you want to exit from doing this just press ctrl+c.
 
 
 
