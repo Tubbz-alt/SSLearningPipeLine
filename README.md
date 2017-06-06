@@ -8,6 +8,7 @@ You need to have both this repository, and davidslac/pylabelme checked out. Then
 your PYTHONPATH so that when you run the SSLearningPipeline user_driver.py, it can find the labelme tool.
 
 Suggestion,
+![My image](mmongia.github.com/SSLearningPipeLine/blob/master/ErrorFromTransferLearning.JPG)
 
 create a working directory, ie
 
