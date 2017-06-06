@@ -98,7 +98,7 @@ You can click enter on the command prompt to label. You can type "n" and then cl
 
 ![alt text](https://github.com/mmongia/SSLearningPipeLine/blob/master/Comment2.JPG)
 
-In order to label click on the drawing button and draw a line. This line will be the diagonal of rectangular box. Then there will be prompt to give a label to the rectangular box. For the sake of this tutorial always label it "0" as shown in the below image.
+In order to label click on the "create polygon" button and draw a line. This line will be the diagonal of rectangular box. Then there will be prompt to give a label to the rectangular box. For the sake of this tutorial always label it "0" as shown in the below image.
 
 
 ![alt text](https://github.com/mmongia/SSLearningPipeLine/blob/master/comment3.JPG)
