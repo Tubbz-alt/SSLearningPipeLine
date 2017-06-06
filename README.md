@@ -93,7 +93,7 @@ You will see that many images come up one after another. These images are alread
 
 ![alt text](https://github.com/mmongia/SSLearningPipeLine/blob/master/Comment1.JPG)
 ![alt text](https://github.com/mmongia/SSLearningPipeLine/blob/master/Comment2.JPG)
-![alt text](https://github.com/mmongia/SSLearningPipeLine/blob/master/Comment3.JPG)
+![alt text](https://github.com/mmongia/SSLearningPipeLine/blob/master/comment3.JPG)
 
 
 
