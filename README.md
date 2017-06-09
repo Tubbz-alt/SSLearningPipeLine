@@ -58,7 +58,7 @@ edit it so that reads.
 
 Run the code using
 ```
-PYTHONPATH=../pylabelme:$PYTHONPATH python user_driver_m
+PYTHONPATH=../transferLearning/pylabelme python user_driver.py
 ```
 and from code located in sslearningpipeline.py, a graph plotting the errors of the predicted boxes will be produced.
 The graph should look similar to  below.
@@ -85,7 +85,7 @@ Make sure in the main function in user_driver_m.py that the code reads like the 
 Now run the code using the following 
 
 ```
-PYTHONPATH=../pylabelme:$PYTHONPATH python user_driver_m
+PYTHONPATH=../transferLearning/pylabelme python user_driver.py
 ```
 You will see that many images come up one after another. These images are already labeled. Eventually there will come an image that has not been labeled and you will have a choice to label it or not.
 
