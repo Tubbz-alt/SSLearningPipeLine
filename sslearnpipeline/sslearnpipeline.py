@@ -26,8 +26,9 @@ class SSLearnPipeline(object):
                vgg16_weights,
                max_boxes_in_one_image, 
                tensorflow_session = None,
-               total_to_label=250):
+               total_to_label=50):
     self.outputdir = outputdir
+    print(self.outputdir)
     assert os.path.exists(outputdir)
     self.output_prefix = output_prefix
     assert os.path.exists(vgg16_weights)
@@ -111,7 +112,7 @@ class SSLearnPipeline(object):
                
   def label(self, img, keystr):
     plt.figure(1)
-    plt.imshow(img)
+    plt.imshow(img[0,:,:,1])
     plt.show()
     plt.pause(.1)
 
@@ -129,8 +130,15 @@ class SSLearnPipeline(object):
         break
       if ans.lower().strip()=='n':
         return None
-
-    util.create_jpeg(img, output_jpeg_fname)
+        
+    a = np.max(img)
+    b = np.min(img)
+    print(a)
+    print("hiiii")
+    print(b)
+    print(img.shape)
+    img_prep= img;
+    util.create_jpeg(img_prep, output_jpeg_fname)
     labelme_command_line = self.make_labelme_command_line(input_jpeg_fname=output_jpeg_fname,
                                                           output_label_fname=output_label_fname)
     print("about to execute:\n  %s" % labelme_command_line)
@@ -138,13 +146,12 @@ class SSLearnPipeline(object):
     assert os.path.exists(output_label_fname)
     
     self.validate_label_file(output_label_fname)
-
-    img_batch_for_vgg16, orig_resize_mean = util.prep_img_for_vgg16(img, mean_to_subtract=None)
+    #img_batch_for_vgg16, orig_resize_mean = util.prep_img_for_vgg16(img, mean_to_subtract=None)
     # TODO: get a more accurate mean to subtract? Keep track of the orig_resize_mean?
 
-    layers = self.vgg16.get_model_layers(self.session, 
-                                         imgs=img_batch_for_vgg16, 
-                                         layer_names=['fc2'])
+    #layers = self.vgg16.get_model_layers(self.session,imgs=[img_batch_for_vgg16], layer_names=['fc2'])
+
+    layers = self.vgg16.get_model_layers(self.session, imgs = img, layer_names = ['fc2'])
 
     codeword = layers[0][0,:]
     assert codeword.shape == (4096,)
@@ -230,34 +237,54 @@ class SSLearnPipeline(object):
       print(counts)
       #assert mincounts>1, "Only 1 example of a certain label. Need atleast 2 examples"
         
-      model.fit(features_class[:,0:4096],features_class[:,4096])
+      #model.fit(features_class[:,0:4096],features_class[:,4096])
       #joblib.dump(model,'ClassifierModel.pkl')
       #Measure Model Performance
       total = 0
-      indices = np.arange(features_class.shape[0])
-      for k in range(0,features_class.shape[0]):
-        data = features_class[indices!=k,:]
-        model.fit(data[:,0:4096],data[:,4096])
-        w = model.predict(features_class[k,0:4096])
-        total = total + (w==features_class[k,4096])
-      accuracy = total/features_class.shape[0]
-      trial[num] = accuracy
-      print("accuracy is ")
-      print(accuracy)
-    r = np.argmax(trial)
-    reg = 10**(r/2)
-    reg = 1/reg
-    model = LogisticRegression(penalty='l2', dual=False, tol=0.0001, C=reg, fit_intercept=True, intercept_scaling=1, class_weight=None, random_state=None, solver='newton-cg', max_iter=100, multi_class='multinomial', verbose=0, warm_start=False, n_jobs=1)
-    model.fit(features_class[:,0:4096],features_class[:,4096])
-    joblib.dump(model,'ClassifierModel.pkl')
+      #indices = np.arange(features_class.shape[0])
+      #for k in range(0,features_class.shape[0]):
+      #  data = features_class[indices!=k,:]
+      #  model.fit(data[:,0:4096],data[:,4096])
+      #  w = model.predict(features_class[k,0:4096])
+      #  total = total + (w==features_class[k,4096])
+      #accuracy = total/features_class.shape[0]
+      #trial[num] = accuracy
+      #print("accuracy is ")
+      #print(accuracy)
+    #r = np.argmax(trial)
+    #reg = 10**(r/2)
+    #reg = 1/reg
+    #model = LogisticRegression(penalty='l2', dual=False, tol=0.0001, C=reg, fit_intercept=True, intercept_scaling=1, class_weight=None, random_state=None, solver='newton-cg', max_iter=100, multi_class='multinomial', verbose=0, warm_start=False, n_jobs=1)
+    #model.fit(features_class[:,0:4096],features_class[:,4096])
+    #joblib.dump(model,'ClassifierModel.pkl')
 
     #Class One Regression 
-    print('Class One Regressor Model')
+    #print('Class One Regressor Model')
+    #raw_input("ok check")
     data = np.where(features_class[:,4096]==1)
     data = features_class[data[0],:]
-    print(data.shape)
+    #print(data.shape)
     model = MultiOutputRegressor(LinearRegression())
-    model = model.fit(data[:,0:4096],data[:,4097:4101])
+    train = 60
+    model = model.fit(data[0:60,0:4096],data[0:60,4097:4101])
+    r = model.predict(data[60:,0:4096])
+    temp = np.sum(np.abs((r - data[60:,4097:4101])))
+    #print(np.abs(r - data[60:,4097:4101]))
+    #print(temp)
+    t = np.abs(r - data[60:,4097:4101])
+    #ipython
+    #print(1/0)
+    #print(r.shape)
+    t = t.reshape(t.shape[0] * t.shape[1])
+    #print(t.shape)
+    #print(data[0:60,4097:4101].shape)
+    hist, bin_edges = np.histogram(t,density = False)
+    #print(t)
+    #print(hist)
+    #print(bin_edges)
+    plt.hist(t,bins = 'auto')
+    plt.title("x-axis:error , y-axis:number of entries")
+    raw_input("lets view the results")
     joblib.dump(model,'ClassOneRegression.pkl')
     #total = 0
     #indices = np.arange(features_class.shape[0])
