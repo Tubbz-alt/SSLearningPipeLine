@@ -45,14 +45,12 @@ We first need to edit user_driver.py file. In the main function where the follow
 ```
     for idx in A:
         #break
-        #locdata = get_old_info(xml)
 
 ```
 edit it so that reads. 
 ```
     for idx in A:
         break
-        #locdata = get_old_info(xml)
 ```
 
 Run the code using
@@ -77,9 +75,9 @@ Make sure in the main function in user_driver.py that the code reads like the fo
 ```
     for idx in A:
         #break
-        #locdata = get_old_info(xml)
-
 ```
+
+(comment out the break)
 
 Now run the code using the following 
 
