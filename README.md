@@ -20,7 +20,6 @@ First
 
 ```
 cp-r /reg/g/psdm/tutorials/transferLearning .
-
 ```
 
 In SSLearningPipeLine, in user_driver.py, in first line of main(), change outputdir to the address for the transferLearning folder under work.
