@@ -13,7 +13,7 @@ import xml.etree.ElementTree as ET
 import psana
 import scipy.misc
 from sslearnpipeline import SSLearnPipeline
-import vgg16img2codeword
+
 
 
 
