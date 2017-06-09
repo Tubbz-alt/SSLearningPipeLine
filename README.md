@@ -8,10 +8,9 @@ Create a working directory, ie
 ```
 mkdir work
 cd work
+source /reg/g/psdm/etc/psconda.sh
 ```
-
-source conda_setup
-on pslogin (outside internet machine, get both these repos):
+on pslogin (outside internet machine):
 
 ```
 git clone https://github.com/mmongia/SSLearningPipeLine.git
@@ -24,14 +23,14 @@ cp-r /reg/g/psdm/tutorials/transferLearning .
 
 ```
 
-In SSLearningPipeLine, in user_driver.py, change outputdir to the address for the transferLearning folder under work.
+In SSLearningPipeLine, in user_driver.py, in first line of main(), change outputdir to the address for the transferLearning folder under work.
 
 
 Now in another terminal, 
 
 ```
 ssh psana
-source conda_setup
+source /reg/g/psdm/etc/psconda.sh
 cd work/SSLearningPipeline
 PYTHONPATH=../transferLearning/pylabelme python user_driver.py
 ```
@@ -42,7 +41,7 @@ notice that the script, user_driver.py, is telling sslearn to write the labeled 
 
 # How to get error results
 
-We first need to edit user_driver_m.py file. In the main function where the following lines of code are written 
+We first need to edit user_driver.py file. In the main function where the following lines of code are written 
 ```
     for idx in A:
         #break
@@ -72,7 +71,7 @@ The graph should look similar to  below.
 
 
 # How to label images
-Make sure in the main function in user_driver_m.py that the code reads like the following
+Make sure in the main function in user_driver.py that the code reads like the following
 
 
 ```
