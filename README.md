@@ -19,7 +19,7 @@ First
 
 
 ```
-cp-r /reg/g/psdm/tutorials/transferLearning .
+cp -r /reg/g/psdm/tutorials/transferLearning .
 ```
 
 In SSLearningPipeLine, in user_driver.py, in first line of main(), change outputdir to the address for the transferLearning folder under work.
@@ -30,7 +30,7 @@ Now in another terminal,
 ```
 ssh psana
 source /reg/g/psdm/etc/psconda.sh
-cd work/SSLearningPipeline
+cd ./work/SSLearningPipeline
 PYTHONPATH=../transferLearning/pylabelme python user_driver.py
 ```
 
