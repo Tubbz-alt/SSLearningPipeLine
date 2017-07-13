@@ -30,7 +30,7 @@ Now in another terminal,
 ```
 ssh psana
 source /reg/g/psdm/etc/psconda.sh
-cd ./work/SSLearningPipeline
+cd work/SSLearningPipeline
 PYTHONPATH=../transferLearning/pylabelme python user_driver.py
 ```
 
