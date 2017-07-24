@@ -15,6 +15,7 @@ from pathlib import Path
 ###############
 import numpy as np  
 from scipy.misc import imread
+import cv2 
 
 ##########
 # Module #
@@ -35,6 +36,12 @@ def main(args):
     exit = False                          # Check if we should exit
 
     # Begin looping through images
+    img1 = None
+    img2 = None
+    delay1 = None
+    delay2 = None
+    step1 = None
+    step2 = None
     for index in A:
         while not exit:
             try:
@@ -47,8 +54,16 @@ def main(args):
                         str(filepath)))
                     break
                 # Read and label the image
-                sslearn.label(imread(str(filepath)), args.run, index)
-                break
+		img = imread(str(filepath))
+                classification,delay,step = sslearn.label(img, img1, img2, delay1, delay2, step1, step2, args.run, index)
+                if classification==0: 
+			img2 = img1
+			img1 = img
+			delay2 = delay1
+			delay1 = delay
+			step2 = step1
+			step1 = step
+		break
 
             # Handle Interrupts
             except (KeyboardInterrupt, EOFError):
@@ -195,10 +210,10 @@ def setup_parser_and_logging(description=""):
                         default=str(Path.cwd()) + "/logs", action="store",
                         help="Path to save the logs in.")
     parser.add_argument("-o", "--output", metavar="P", type=str,  
-                        default=str(Path.cwd()) + "/output", action="store",
+                        default="/reg/d/psdm/XPP/xppl3816/scratch/transferLearning", action="store",
                         help="Path to save the labeled images in.")
     parser.add_argument("-i", "--images", metavar="P", type=str,
-                        default="/reg/neh/home/kfotion/work/transferLearning" \
+                        default="/reg/d/psdm/XPP/xppl3816/scratch/transferLearning" \
                         "/pngs_to_label/", action="store",
                         help="Path to get the images from.")
     # Parse the inputted arguments
