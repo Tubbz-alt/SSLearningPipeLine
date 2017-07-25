@@ -26,8 +26,12 @@ from sslearnpipeline import SSLearnPipeline
 
 def access_predictions(run_num):
 	with open('/reg/d/psdm/XPP/xppl3816/scratch/timeTool_ml/data_results/xppl3816_r' + str(run_num) + '_RF_plot.dat', 'r') as f:
-        	lines = f.readlines()
-        predictions = {int(float(line.split(' ')[0])): ("%.4f" % float(line.strip('\n').split(' ')[3]), int(float(line.split(' ')[0]))/1201) for line in lines}
+        	rf_lines = f.readlines()
+	with open('/reg/d/psdm/XPP/xppl3816/scratch/timeTool_ml/data_source/xppl3816_r' + str(run_num) + '_delays.dat','r') as f:
+		step_lines = f.readlines()
+	
+	# Build prediction dictionary: {shot#: (pixel_pos, delay, step)}
+        predictions = {int(float(line.split(' ')[0])): (float(line.split(' ')[2]), float("%.4f" % float(line.strip('\n').split(' ')[3])), int(float(step_lines[int(float(line.split(' ')[0]))].split(' ')[0]))) for line in rf_lines}
        	return predictions
 
 def main(args):
@@ -41,19 +45,14 @@ def main(args):
     # Grab indices
     all_image_files = get_images_from_dir(args.images, shuffle=True)
     
-    # Access all delays and steps 
+    # Access all delays and pixel positions and plot
     predictions = access_predictions(args.run)
 
     # Meta vars
     exit = False                          # Check if we should exit
 
     # Begin looping through images
-    img1 = None
-    img2 = None
-    delay1 = None
-    delay2 = None
-    step1 = None
-    step2 = None
+    reference_imgs = []
     for filename in all_image_files:
         while not exit:
             try:
@@ -67,20 +66,14 @@ def main(args):
                         str(filepath)))
                     break
                 # Read and label the image
-		img = imread(str(filepath))
+		img_of_interest = (imread(str(filepath)), index)
 		if index in predictions:
-			(delay, step) = predictions.get(index)
+			classification = sslearn.label(predictions, img_of_interest, reference_imgs, args.run)
+                	if classification==0:
+				reference_imgs = [img_of_interest if i == 0 else reference_imgs[i-1] for i in range(0, min(2, len(reference_imgs)+1))]
 		else:
 			logger.warn("File '{0}' has too low of intensity. Skipping".format(
 			   str(filepath)))
-                classification = sslearn.label(img, img1, img2, delay, delay1, delay2, step, step1, step2, args.run, index)
-                if classification==0: 
-			img2 = img1
-			img1 = img
-			delay2 = delay1
-			delay1 = delay
-			step2 = step1
-			step1 = step
 		break
 
             # Handle Interrupts
