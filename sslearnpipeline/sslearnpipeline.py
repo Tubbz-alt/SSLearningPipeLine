@@ -39,23 +39,15 @@ class SSLearnPipeline(object):
     		with open(label_file, 'w') as f:
 			f.write(str(yes) + ' ' + str(no))
 
-	def access_delay_step(self, run_num, shot_num):
-		with open('/reg/d/psdm/XPP/xppl3816/scratch/timeTool_ml/data_results/xppl3816_r' + str(run_num) + '_RF_plot.dat', 'r') as f:
-			lines = f.readlines()[shot_num].split(' ')
-		delay = "%.4f" % float(lines[3])
-		step = int(float(lines[0]))/1202
-		return delay,step
-
-  	def label(self, img, img1, img2, delay1, delay2, step1, step2, run_num, shot_num):
+  	def label(self, img, img1, img2, delay, delay1, delay2, step, step1, step2, run_num, shot_num):
 
     		output_label_fname = os.path.join(self.labeled_dir, self.output_prefix + '_r' + str(run_num) + '_s' + str(shot_num) + '.dat')
 
-    		if os.path.exists(output_label_fname):
-      			print("This image has already been checked - skipping: exists: %s" % output_label_fname)
-      			return -1,None,None
+		# Removed this since now we are tracking how many people agree and disagree with each image
+    		#if os.path.exists(output_label_fname):
+      		#	print("This image has already been checked - skipping: exists: %s" % output_label_fname)
+      		#	return -1
    
-    		delay,step = self.access_delay_step(run_num, shot_num)
-	
 		plt.style.use("dark_background")
 
     		if not img2 is None:
@@ -101,4 +93,4 @@ class SSLearnPipeline(object):
 		plt.close(1)
     
 		self.update_label_file(output_label_fname, shot_num, classification)
-    		return classification, delay, step
+    		return classification

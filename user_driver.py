@@ -9,6 +9,8 @@ import logging
 from logging.handlers import RotatingFileHandler
 import argparse
 from pathlib import Path
+import re
+import random
 
 ###############
 # Third Party #
@@ -22,6 +24,12 @@ import cv2
 ##########
 from sslearnpipeline import SSLearnPipeline
 
+def access_predictions(run_num):
+	with open('/reg/d/psdm/XPP/xppl3816/scratch/timeTool_ml/data_results/xppl3816_r' + str(run_num) + '_RF_plot.dat', 'r') as f:
+        	lines = f.readlines()
+        predictions = {int(float(line.split(' ')[0])): ("%.4f" % float(line.strip('\n').split(' ')[3]), int(float(line.split(' ')[0]))/1201) for line in lines}
+       	return predictions
+
 def main(args):
     """
     Main SSleariningPipeline labeling script.
@@ -31,7 +39,11 @@ def main(args):
                               output_prefix=args.experiment)
 
     # Grab indices
-    A = np.load("meta/indexlist.npy")     # Why are we indexing this way    
+    all_image_files = get_images_from_dir(args.images, shuffle=True)
+    
+    # Access all delays and steps 
+    predictions = access_predictions(args.run)
+
     # Meta vars
     exit = False                          # Check if we should exit
 
@@ -42,20 +54,26 @@ def main(args):
     delay2 = None
     step1 = None
     step2 = None
-    for index in A:
+    for filename in all_image_files:
         while not exit:
             try:
-                # Get the filepath
-                filepath = args.images / "r{0}_s{1}_vi.png".format(
-                    str(args.run), str(index))
-                # Make sure it exists
+                
+		filepath = filename
+		index = int(float(re.sub('r.*_s','',filepath.parts[-1].rstrip('_vi.png'))))
+		
+		# Make sure it exists
                 if not filepath.exists():
                     logger.warn("File '{0}' does not exist. Skipping.".format(
                         str(filepath)))
                     break
                 # Read and label the image
 		img = imread(str(filepath))
-                classification,delay,step = sslearn.label(img, img1, img2, delay1, delay2, step1, step2, args.run, index)
+		if index in predictions:
+			(delay, step) = predictions.get(index)
+		else:
+			logger.warn("File '{0}' has too low of intensity. Skipping".format(
+			   str(filepath)))
+                classification = sslearn.label(img, img1, img2, delay, delay1, delay2, step, step1, step2, args.run, index)
                 if classification==0: 
 			img2 = img1
 			img1 = img
@@ -99,28 +117,29 @@ def get_images_from_dir(target_dir, n_images=None, shuffle=False, out_type=list,
     Crawls through the contents of inputted directory and saves files with 
     image extensions as images.
     """
-    # image_ext = set(["bmp", "jpeg", "jpg", "png", "tif", "tiff"])
-    # target_dir_path = Path(target_dir)
-    # if recursive and glob == "*":
-    #     glob = "**"
-    # # Grab path of all image files in dir
-    # image_paths = [p for p in sorted(target_dir_path.glob(glob)) if
-    #                p.is_file() and p.suffix[1:].lower() in image_ext]
+    image_ext = set(["bmp", "jpeg", "jpg", "png", "tif", "tiff"])
+    target_dir_path = Path(target_dir)
+    if recursive and glob == "*":
+         glob = "**"
+    # Grab path of all image files in dir
+    image_paths = [p for p in sorted(target_dir_path.glob(glob)) if
+                    p.is_file() and p.suffix[1:].lower() in image_ext]
     
-    # # Shuffle the list of paths
-    # if shuffle:
-    #     random.shuffle(image_paths)
-    #     if out_type is dict:
-    #         logger.warning("Shuffle set to True for requested output type dict")
-    # # Only keep n_images of those files
-    # if n_images:
-    #     image_paths = image_paths[:n_images]
+    # Shuffle the list of paths
+    if shuffle:
+	random.shuffle(image_paths)
+    	if out_type is dict:
+    		logger.warning("Shuffle set to True for requested output type dict")
+    # Only keep n_images of those files
+    if n_images:
+    	image_paths = image_paths[:n_images]
 
-    # # Return as the desired type
-    # if out_type is dict:
-    #     return {p.stem : cv2.imread(str(p), read_mode) for p in image_paths}
-    # else:
-    #     return out_type([cv2.imread(str(p), read_mode) for p in image_paths])
+    return image_paths
+    # Return as the desired type
+    #if out_type is dict:
+    #	return {p.stem : cv2.imread(str(p), read_mode) for p in image_paths}
+    #else:
+    #	return out_type([cv2.imread(str(p), read_mode) for p in image_paths])
 
         
 def get_logger(name, stream_level=logging.warn, log_file=True, 
