@@ -24,14 +24,15 @@ import cv2
 ##########
 from sslearnpipeline import SSLearnPipeline
 
-def access_predictions(run_num):
-	with open('/reg/d/psdm/XPP/xppl3816/scratch/timeTool_ml/data_results/xppl3816_r' + str(run_num) + '_RF_plot.dat', 'r') as f:
+def access_predictions(run_num, model):
+	with open('/reg/d/psdm/XPP/xppl3816/scratch/timeTool_ml/data_results/xppl3816_r' + str(run_num) + '_' + model + '_plot.dat', 'r') as f:
         	rf_lines = f.readlines()
 	with open('/reg/d/psdm/XPP/xppl3816/scratch/timeTool_ml/data_source/xppl3816_r' + str(run_num) + '_delays.dat','r') as f:
 		step_lines = f.readlines()
 	
 	# Build prediction dictionary: {shot#: (pixel_pos, delay, step)}
         predictions = {int(float(line.split(' ')[0])): (float(line.split(' ')[2]), float("%.4f" % float(line.strip('\n').split(' ')[3])), int(float(step_lines[int(float(line.split(' ')[0]))].split(' ')[0]))) for line in rf_lines}
+
        	return predictions
 
 def main(args):
@@ -43,10 +44,10 @@ def main(args):
                               output_prefix=args.experiment)
 
     # Grab indices
-    all_image_files = get_images_from_dir(args.images, shuffle=True)
+    all_image_files = get_images_from_dir(os.path.join(str(args.images), str(args.run)), shuffle=True)
     
     # Access all delays and pixel positions and plot
-    predictions = access_predictions(args.run)
+    predictions = access_predictions(args.run, args.model)
 
     # Meta vars
     exit = False                          # Check if we should exit
@@ -218,6 +219,8 @@ def setup_parser_and_logging(description=""):
                         help="Experiment to run the labeler with.")
     parser.add_argument("-r", "--run", metavar="N", type=int,  default=110, 
                         action="store", help="Run number of the experiment.")
+    parser.add_argument("-m", "--model", type=str,  default='RF',
+                        action="store", help="Regression model to be used.")
     parser.add_argument("--logdir", metavar="P", type=str,  
                         default=str(Path.cwd()) + "/logs", action="store",
                         help="Path to save the logs in.")
