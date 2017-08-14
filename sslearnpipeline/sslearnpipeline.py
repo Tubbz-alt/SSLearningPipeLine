@@ -133,7 +133,7 @@ def plot_predictions(predictions, step_of_interest):
         xs = sub_pred.keys()
         ys = zip(*sub_pred.values())[0]
         zs = zip(*sub_pred.values())[1]
-	ax.scatter(xs, ys, zs, c='b')
+	ax.scatter(xs, ys, zs, c='b', alpha=0.15)
 	plt.title('Predictions of all shots from step ' + str(step_of_interest))
 	ax.set_xlabel('shot_num')
 	ax.set_ylabel('pixel_pos')
