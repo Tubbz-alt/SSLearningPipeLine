@@ -1,124 +1,106 @@
-# SSLearningPipeLine
+SSLearningPipeLine
+---------
 
-# Operations
+Script that provides the basic functionality for labeling user data data by
+crawling through an image directory, displaying the image to the user, and then
+saving the inputted label in an output directory.
 
+Initial Setup
+-------
 
-Create a working directory, ie
+SSH to a machine that has internet access. If you are on NFS, pslogin or any
+of the psbuild-rhel<#> machines are accessible and have an internet connection.
+
+```
+ssh pslogin			# Or machine that has internet access
+```
+
+Set up a working directory.
 
 ```
 mkdir work
 cd work
-source /reg/g/psdm/etc/psconda.sh
-```
-on pslogin (outside internet machine):
-
-```
-git clone https://github.com/mmongia/SSLearningPipeLine.git
-```
-First 
-
-
-```
-cp -r /reg/g/psdm/tutorials/transferLearning .
 ```
 
-In SSLearningPipeLine, in user_driver.py, in first line of main(), change outputdir to the address for the transferLearning folder under work.
+Clone the SSLearningPipeline repo and the pylabelme repo into this working
+directory.
 
+```
+git clone https://github.com/slaclab/SSLearningPipeLine.git
+git clone https://github.com/slaclab/PyLabelMe.git
+```
 
-Now in another terminal, 
+Operations
+------
+
+To have access to the data, SSH to one of the psana nodes.
 
 ```
 ssh psana
-source /reg/g/psdm/etc/psconda.sh
-cd work/SSLearningPipeline
-PYTHONPATH=../transferLearning/pylabelme python user_driver.py
 ```
 
-notice that the script, user_driver.py, is telling sslearn to write the labeled files into your transferlearning directory.
-
-
-
-# How to get error results
-
-We first need to edit user_driver.py file. In the main function where the following lines of code are written 
-```
-    for idx in A:
-        #break
+Navigate to the working directory that contains SSLearningPipeline
 
 ```
-edit it so that reads. 
-```
-    for idx in A:
-        break
+cd work/SSLearningPipeLine
 ```
 
-Run the code using
-```
-PYTHONPATH=../transferLearning/pylabelme python user_driver.py
-```
-and from code located in sslearningpipeline.py, a graph plotting the errors of the predicted boxes will be produced.
-The graph should look similar to  below.
-
-
-
-![alt text](figures/readme/ErrorFromTransferLearning.JPG?raw=true)
-
-
-
-
-
-# How to label images
-Make sure in the main function in user_driver.py that the code reads like the following
-
+The script of interest is *user_driver.sh*, which provides the command line
+interface to the labeling script. To actually begin running the script and
+labelling images, it can be run as a stand alone executable.
 
 ```
-    for idx in A:
-        #break
+./user_driver.sh
 ```
 
-(comment out the break)
-
-Now run the code using the following 
+To view the list of options the script takes, run it with the *-h* or the
+*--help* option.
 
 ```
-PYTHONPATH=../transferLearning/pylabelme python user_driver.py
+./user_driver.sh -h
 ```
-You will see that many images come up one after another. These images are already labeled. Eventually there will come an image that has not been labeled and you will have a choice to label it or not.
 
-![alt text](figures/readme/Comment1.JPG?raw=true)
+This command should return a summary of all the valid options avaliable and
+looks as follows.
 
-You can click enter on the command prompt to label. You can type "n" and then click enter to move on. Make sure to label images that only have fingers on the top island. For the sake of this tutorial we have set up the code to worry about the top finger. Once you find an image that has a top finger and you click enter you will see something like the following 
+```
+usage: user_driver.py [-h] [-v] [-d] [-e E] [-r N] [-m MODEL] [--logdir P]
+                      [-o P] [-i P]
 
+Display time tool results and receive input.
 
-![alt text](figures/readme/Comment2.JPG?raw=true)
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --verbose         Increase verbosity.
+  -d, --debug           Run in debug mode.
+  -e E, --experiment E  Experiment to run the labeler with.
+  -r N, --run N         Run number of the experiment.
+  -m MODEL, --model MODEL
+                        Regression model to be used.
+  --logdir P            Path to save the logs in.
+  -o P, --output P      Path to save the labeled images in.
+  -i P, --images P      Path to get the images from.
+```
 
-In order to label click on the "create polygon" button and draw a line. This line will be the diagonal of rectangular box. Then there will be prompt to give a label to the rectangular box. For the sake of this tutorial always label it "0" as shown in the below image.
+Legacy Variable Definitions
+----------
 
-
-![alt text](figures/readme/comment3.JPG?raw=true)
-
-
-You can keep doing this. If you want to exit from doing this just press ctrl+c.
-
-# The role of certain variable and directories in this code
-
-
-  vgg16 weights:
+vgg16 weights:
   
-  These are very important. These weights are the weights of the VGGNET model which we past each image through to get codewords. These     codewords will be the our feature set for any machine learning ( as simple as linear regression) task we want to do.
-  
-  json directory:
+ - These are very important. These weights are the weights of the VGGNET model which we past each image through to get codewords. These     codewords will be the our feature set for any machine learning ( as simple as linear regression) task we want to do.
+
+json directory:
     
-  After labeling an image, the locations of the boxes drawn and their corresponding labels are stored in a json file. From the json       files of the labeled images we create machine learning models.
+ - After labeling an image, the locations of the boxes drawn and their corresponding labels are stored in a json file. From the json       files of the labeled images we create machine learning models.
     
-  codewords:
+codewords:
     
-  Once again these codewords are generated by passing the images through the vgg net. 
+ - Once again these codewords are generated by passing the images through the vgg net. 
+
+index list:
   
-  index list:
+ - This is just a predefined list of images that we will be looking at. From this list of indexes we can gather the images from the the     corresponding experiment's database.
   
-  This is just a predefined list of images that we will be looking at. From this list of indexes we can gather the images from the the     corresponding experiment's database.
-  
-  dark image:
-    
-  This is an image which represents what the camera sees when there is no action going on. It is important to subtract this from the       images so we can see the image that corresponds to the real action. This perhaps was a bit to figurative of an explanation.
+dark image:
+
+ - This is an image which represents what the camera sees when there is no action going on. It is important to subtract this from the       images so we can see the image that corresponds to the real action. This perhaps was a bit to figurative of an explanation.

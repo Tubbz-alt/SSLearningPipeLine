@@ -26,7 +26,7 @@ from sslearnpipeline import SSLearnPipeline
 
 def access_predictions(run_num, model):
 	with open('/reg/d/psdm/XPP/xppl3816/scratch/timeTool_ml/data_results/xppl3816_r' + str(run_num) + '_' + model + '_plot.dat', 'r') as f:
-        	rf_lines = f.readlines()
+        rf_lines = f.readlines()
 	with open('/reg/d/psdm/XPP/xppl3816/scratch/timeTool_ml/data_source/xppl3816_r' + str(run_num) + '_delays.dat','r') as f:
 		step_lines = f.readlines()
 	
@@ -101,15 +101,12 @@ def main(args):
         if exit:
             break
 
-# Function that goes through a directory and returns all the images as a list
-# images.
-# TODO: modify this to just return a list of paths that is optionally shuffled.
 def get_images_from_dir(target_dir, n_images=None, shuffle=False, out_type=list,
                         recursive=False, read_mode=cv2.IMREAD_GRAYSCALE,
                         glob="*"):
     """
-    Crawls through the contents of inputted directory and saves files with 
-    image extensions as images.
+    Crawls through the contents of inputted directory and returns a list of
+    paths to the images.
     """
     image_ext = set(["bmp", "jpeg", "jpg", "png", "tif", "tiff"])
     target_dir_path = Path(target_dir)
@@ -129,12 +126,6 @@ def get_images_from_dir(target_dir, n_images=None, shuffle=False, out_type=list,
     	image_paths = image_paths[:n_images]
 
     return image_paths
-    # Return as the desired type
-    #if out_type is dict:
-    #	return {p.stem : cv2.imread(str(p), read_mode) for p in image_paths}
-    #else:
-    #	return out_type([cv2.imread(str(p), read_mode) for p in image_paths])
-
         
 def get_logger(name, stream_level=logging.warn, log_file=True, 
                log_dir=Path("."), max_bytes=1024*1024):
